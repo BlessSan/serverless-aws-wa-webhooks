@@ -1,0 +1,58 @@
+org: blesssan
+app: aws-node-express-dynamodb-api
+service: aws-node-starter
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    TOKEN: ${env:APP_TOKEN}
+    REVIEW_TABLE: reviews
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: arn:aws:dynamodb:us-east-1:856364339827:table/${self:provider.environment.REVIEW_TABLE}
+        - Effect: "Allow"
+          Action:
+            - firehose:DeleteDeliveryStream
+            - firehose:PutRecord
+            - firehose:PutRecordBatch
+            - firehose:UpdateDestination
+          Resource: arn:aws:firehose:us-east-1:856364339827:deliverystream/whatsapp-reviews
+
+functions:
+  wa_webhook:
+    handler: index.handler
+    events:
+      - http: ANY /
+      - http: "ANY /{proxy+}"
+
+plugins:
+  - serverless-offline
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.REVIEW_TABLE}
+        AttributeDefinitions:
+          - AttributeName: phonenumber
+            AttributeType: S
+        KeySchema:
+          - AttributeName: phonenumber
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+useDotenv: true
