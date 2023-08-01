@@ -8,6 +8,8 @@ provider:
   runtime: nodejs18.x
   environment:
     TOKEN: ${env:APP_TOKEN}
+    WHATSAPP_BUSINESS_NUMBER_ID: ${env:WHATSAPP_BUSINESS_NUMBER_ID}
+    ACCESS_TOKEN: ${env:ACCESS_TOKEN}
     REVIEW_TABLE: reviews
   iam:
     role:
@@ -38,21 +40,5 @@ functions:
 
 plugins:
   - serverless-offline
-
-resources:
-  Resources:
-    usersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.REVIEW_TABLE}
-        AttributeDefinitions:
-          - AttributeName: phonenumber
-            AttributeType: S
-        KeySchema:
-          - AttributeName: phonenumber
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
 useDotenv: true
